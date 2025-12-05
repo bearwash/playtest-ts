@@ -1,0 +1,45 @@
+{
+  "name": "@playtest-ts/core",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Core module for playtest-ts - BDD testing framework for Gauge",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf dist",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "gauge",
+    "bdd",
+    "testing",
+    "e2e"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "rimraf": "^5.0.0",
+    "typescript": "~5.8.0"
+  },
+  "peerDependencies": {
+    "@anthropic-ai/sdk": "^0.30.0"
+  },
+  "peerDependenciesMeta": {
+    "@anthropic-ai/sdk": {
+      "optional": true
+    }
+  }
+}

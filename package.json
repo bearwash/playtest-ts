@@ -1,0 +1,17 @@
+{
+  "name": "playtest-ts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "TypeScript BDD testing framework for Gauge",
+  "scripts": {
+    "build": "pnpm -r build",
+    "clean": "pnpm -r clean",
+    "test": "pnpm -r test"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "packageManager": "pnpm@9.0.0",
+  "license": "MIT"
+}

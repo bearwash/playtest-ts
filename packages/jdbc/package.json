@@ -1,0 +1,45 @@
+{
+  "name": "@playtest-ts/jdbc",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "JDBC module for playtest-ts - Database testing with PostgreSQL",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf dist",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "gauge",
+    "bdd",
+    "testing",
+    "e2e",
+    "database",
+    "postgresql",
+    "jdbc"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@playtest-ts/core": "workspace:*",
+    "pg": "^8.11.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/pg": "^8.11.0",
+    "rimraf": "^5.0.0",
+    "typescript": "~5.8.0"
+  }
+}
