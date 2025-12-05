@@ -6,3 +6,7 @@ export type { HttpRequest, HttpResponse } from "./client/http-client.js";
 export { RequestBuilder } from "./client/request-builder.js";
 export type { ResponseProxy } from "./proxy/response-proxy.js";
 export { createResponseProxy } from "./proxy/response-proxy.js";
+
+// Gauge steps
+export { initHttpClient, RequestSteps } from "./steps/request-steps.js";
+export { ResponseSteps, ResponseAssertionSteps } from "./steps/response-steps.js";
