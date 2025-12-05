@@ -1,5 +1,6 @@
 // Response proxy for accessing response data
 
+import { JSONPath } from "jsonpath-plus";
 import { HttpResponse } from "../client/http-client.js";
 
 /**
@@ -22,9 +23,15 @@ export interface ResponseProxy {
   jsonBody<T = unknown>(): T;
 
   /**
-   * Get a value from JSON body using a path (e.g., "user.name")
+   * Get a value from JSON body using JSONPath expression (e.g., "$.user.name", "$.users[0]")
+   * Supports full JSONPath syntax including array access, wildcards, filters
    */
   jsonPath<T = unknown>(path: string): T;
+
+  /**
+   * Get all values matching a JSONPath expression (for indefinite paths)
+   */
+  jsonPathAll<T = unknown>(path: string): T[];
 
   /**
    * Get a header value
@@ -58,20 +65,20 @@ class ResponseProxyImpl implements ResponseProxy {
   }
 
   jsonPath<T = unknown>(path: string): T {
-    const parts = path.split(".");
-    let current: unknown = this.jsonBody();
+    // Normalize path to JSONPath format if needed
+    const jsonPathExpr = path.startsWith("$") ? path : `$.${path}`;
+    const results = JSONPath({ path: jsonPathExpr, json: this.jsonBody() });
 
-    for (const part of parts) {
-      if (current === null || current === undefined) {
-        throw new Error(`Cannot access path "${path}": value is null or undefined`);
-      }
-      if (typeof current !== "object") {
-        throw new Error(`Cannot access path "${path}": value is not an object`);
-      }
-      current = (current as Record<string, unknown>)[part];
+    if (results.length === 0) {
+      throw new Error(`JSONPath "${path}" returned no results`);
     }
 
-    return current as T;
+    return results[0] as T;
+  }
+
+  jsonPathAll<T = unknown>(path: string): T[] {
+    const jsonPathExpr = path.startsWith("$") ? path : `$.${path}`;
+    return JSONPath({ path: jsonPathExpr, json: this.jsonBody() }) as T[];
   }
 
   header(name: string): string | undefined {

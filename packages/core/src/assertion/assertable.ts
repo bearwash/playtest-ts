@@ -67,6 +67,21 @@ export interface NumberAssertable extends Assertable<number> {
   shouldBeLessThanOrEqual(expected: number): void;
 }
 
+/**
+ * Decimal-specific assertions with precision support
+ */
+export interface DecimalAssertable extends NumberAssertable {
+  /**
+   * Assert that the decimal equals the expected value with given precision
+   */
+  shouldBeCloseTo(expected: number, precision?: number): void;
+
+  /**
+   * Assert that the decimal has the expected scale (decimal places)
+   */
+  shouldHaveScale(scale: number): void;
+}
+
 class AssertableImpl<T> implements Assertable<T> {
   constructor(public readonly value: T) {}
 
@@ -161,6 +176,32 @@ class NumberAssertableImpl
   }
 }
 
+class DecimalAssertableImpl
+  extends NumberAssertableImpl
+  implements DecimalAssertable
+{
+  shouldBeCloseTo(expected: number, precision: number = 10): void {
+    const diff = Math.abs(this.value - expected);
+    const epsilon = Math.pow(10, -precision);
+    if (diff > epsilon) {
+      throw new Error(
+        `Assertion failed: expected ${this.value} to be close to ${expected} (precision: ${precision})`
+      );
+    }
+  }
+
+  shouldHaveScale(scale: number): void {
+    const str = this.value.toString();
+    const decimalIndex = str.indexOf(".");
+    const actualScale = decimalIndex === -1 ? 0 : str.length - decimalIndex - 1;
+    if (actualScale !== scale) {
+      throw new Error(
+        `Assertion failed: expected ${this.value} to have scale ${scale}, but got ${actualScale}`
+      );
+    }
+  }
+}
+
 /**
  * Create an assertable wrapper for a value
  */
@@ -175,4 +216,11 @@ export function createAssertable<T>(value: T): Assertable<T> {
     return new NumberAssertableImpl(value) as unknown as Assertable<T>;
   }
   return new AssertableImpl(value);
+}
+
+/**
+ * Create a decimal assertable wrapper for a number with precision support
+ */
+export function createDecimalAssertable(value: number): DecimalAssertable {
+  return new DecimalAssertableImpl(value);
 }

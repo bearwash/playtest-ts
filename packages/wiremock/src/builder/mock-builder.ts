@@ -6,7 +6,9 @@ export interface MockRequest {
   method: string;
   path: string;
   headers?: Record<string, string>;
+  queryParams?: Record<string, string>;
   body?: unknown;
+  jsonPathMatchers?: Array<{ path: string; value: unknown }>;
 }
 
 export interface MockResponse {
@@ -55,6 +57,36 @@ export class MockBuilder {
   }
 
   /**
+   * Set expected query parameters
+   */
+  withQueryParams(params: Record<string, string>): this {
+    this.request.queryParams = params;
+    return this;
+  }
+
+  /**
+   * Add a single query parameter
+   */
+  withQueryParam(name: string, value: string): this {
+    if (!this.request.queryParams) {
+      this.request.queryParams = {};
+    }
+    this.request.queryParams[name] = value;
+    return this;
+  }
+
+  /**
+   * Add a JSONPath matcher for request body validation
+   */
+  withJsonPathMatch(path: string, value: unknown): this {
+    if (!this.request.jsonPathMatchers) {
+      this.request.jsonPathMatchers = [];
+    }
+    this.request.jsonPathMatchers.push({ path, value });
+    return this;
+  }
+
+  /**
    * Set the response status code
    */
   willRespondWith(status: number): this {
@@ -85,33 +117,42 @@ export class MockBuilder {
     const scope = this.server.getScope();
     const method = this.request.method.toLowerCase();
 
+    // Build path with query params
+    let path = this.request.path;
+    if (this.request.queryParams) {
+      const queryString = Object.entries(this.request.queryParams)
+        .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+        .join("&");
+      path = `${path}?${queryString}`;
+    }
+
     let interceptor: ReturnType<typeof scope.get>;
 
     switch (method) {
       case "get":
-        interceptor = scope.get(this.request.path);
+        interceptor = scope.get(path);
         break;
       case "post":
-        interceptor = scope.post(this.request.path, this.request.body as nock.RequestBodyMatcher);
+        interceptor = scope.post(path, this.request.body as nock.RequestBodyMatcher);
         break;
       case "put":
-        interceptor = scope.put(this.request.path, this.request.body as nock.RequestBodyMatcher);
+        interceptor = scope.put(path, this.request.body as nock.RequestBodyMatcher);
         break;
       case "delete":
-        interceptor = scope.delete(this.request.path);
+        interceptor = scope.delete(path);
         break;
       case "patch":
-        interceptor = scope.patch(this.request.path, this.request.body as nock.RequestBodyMatcher);
+        interceptor = scope.patch(path, this.request.body as nock.RequestBodyMatcher);
         break;
       default:
-        interceptor = scope.intercept(this.request.path, method);
+        interceptor = scope.intercept(path, method);
     }
 
+    // Match all headers
     if (this.request.headers) {
-      interceptor = interceptor.matchHeader(
-        Object.keys(this.request.headers)[0],
-        Object.values(this.request.headers)[0]
-      );
+      for (const [name, value] of Object.entries(this.request.headers)) {
+        interceptor = interceptor.matchHeader(name, value);
+      }
     }
 
     interceptor.reply(

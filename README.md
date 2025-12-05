@@ -8,6 +8,10 @@ TypeScript製のBDDテストフレームワーク。Gaugeと統合し、日本�
 - **モジュラー設計**: 必要な機能だけをインストール
 - **TypeScript**: 型安全なテスト実装
 - **Gauge統合**: BDDスタイルのテスト実行
+- **高度なJSONPath**: jsonpath-plusによる複雑なクエリ対応
+- **テーブル比較**: 構造化データの検証機能
+- **Zoomパターン**: オブジェクト/配列への直感的なアクセス
+- **Decimal対応**: 高精度な数値アサーション
 
 ## パッケージ
 
@@ -96,6 +100,25 @@ export class Setup {
 - `undefinedである`
 - `undefinedではない`
 
+#### 小数値（Decimal）
+- `小数値の<expected>である`
+- `小数値の<expected>に近い`
+- `小数点以下<scale>桁である`
+
+#### テーブル
+- `テーブル<tableString>である`
+- `以下のテーブルである <tableString>`
+- `テーブルの行数が<expected>である`
+- `テーブルが空である`
+- `テーブルが空ではない`
+
+#### 存在確認
+- `存在する`
+- `存在しない`
+
+#### 正規表現
+- `正規表現の<pattern>に完全一致している`
+
 ### HTTP（@playtest-ts/http）
 
 #### リクエスト構築
@@ -112,6 +135,7 @@ export class Setup {
 - `レスポンスのボディが`
 - `レスポンスのJSONボディが`
 - `レスポンスのJSONパス<path>が`
+- `レスポンスのJSONパスAll<path>が` （複数結果を配列で取得）
 - `レスポンスのヘッダー<name>が`
 - `レスポンスのステータスコードが<expected>である`
 - `レスポンスのボディが<expected>を含んでいる`
@@ -131,9 +155,84 @@ export class Setup {
 - `モック<name>に<method>リクエスト<path>を設定する`
 - `モックのレスポンスステータスを<status>にする`
 - `モックのレスポンスボディを<body>にする`
+- `モックのクエリパラメータ<name>を<value>にする`
+- `モックのJSONPathマッチ<path>が<value>を設定する`
 - `モックを有効にする`
 - `全てのモックが呼ばれた`
 - `モックをクリアする`
+
+## プログラム API
+
+### JSONPath（高度なクエリ）
+
+```typescript
+import { ResponseProxy } from "@playtest-ts/http";
+
+// 単一値を取得
+const name = response.jsonPath<string>("$.users[0].name");
+
+// 複数値を取得（indefinite path）
+const allNames = response.jsonPathAll<string>("$.users[*].name");
+
+// フィルタリング
+const adults = response.jsonPathAll<User>("$.users[?(@.age >= 18)]");
+```
+
+### テーブル比較
+
+```typescript
+import { createTable, createTableAssertable } from "@playtest-ts/core";
+
+const table = createTable(
+  ["name", "age"],
+  [
+    { name: "Alice", age: 30 },
+    { name: "Bob", age: 25 }
+  ]
+);
+
+createTableAssertable(table)
+  .shouldHaveRowCount(2)
+  .shouldHaveHeaders(["name", "age"]);
+```
+
+### Zoomパターン
+
+```typescript
+import { createJsonZoomable, createArrayZoomable } from "@playtest-ts/core";
+
+// JSONオブジェクトへのズーム
+const json = createJsonZoomable({ user: { name: "Alice", items: [1, 2, 3] } });
+json.zoom("user.name");        // "Alice"
+json.zoom("user.items[0]");    // 1
+
+// 配列へのズーム
+const arr = createArrayZoomable(["a", "b", "c"]);
+arr.zoom("1");  // "b"
+```
+
+### Decimalアサーション
+
+```typescript
+import { createDecimalAssertable } from "@playtest-ts/core";
+
+createDecimalAssertable(3.14159)
+  .shouldBeCloseTo(3.14, 2)      // 精度2桁で比較
+  .shouldHaveScale(5);           // 小数点以下5桁
+```
+
+### WireMock（拡張機能）
+
+```typescript
+import { createMockBuilder } from "@playtest-ts/wiremock";
+
+createMockBuilder()
+  .withMethod("POST")
+  .withPath("/api/users")
+  .withQueryParam("active", "true")
+  .withJsonPathMatch("$.name", "Alice")
+  .willReturn(201, { id: 1 });
+```
 
 ## 開発
 

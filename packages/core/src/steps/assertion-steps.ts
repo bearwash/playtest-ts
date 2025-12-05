@@ -3,7 +3,9 @@
 
 import { Step } from "gauge-ts";
 import { ScenarioStore } from "../store/scenario-store.js";
-import { createAssertable } from "../assertion/assertable.js";
+import { createAssertable, createDecimalAssertable } from "../assertion/assertable.js";
+import { createTableAssertable, parseGaugeTable } from "../table/table.js";
+import type { Table } from "../table/table.js";
 
 const CURRENT_VALUE_KEY = "__currentValue__";
 
@@ -167,6 +169,107 @@ export class NullAssertionSteps {
     const actual = getCurrentValue<unknown>();
     if (actual === undefined) {
       throw new Error("Assertion failed: expected value to not be undefined");
+    }
+  }
+}
+
+// ============================================
+// Decimal assertions (小数値)
+// ============================================
+
+export class DecimalAssertionSteps {
+  @Step("小数値の<expected>である")
+  public async shouldBeDecimal(expected: string): Promise<void> {
+    const actual = getCurrentValue<number>();
+    const expectedNum = parseFloat(expected);
+    createDecimalAssertable(actual).shouldBeCloseTo(expectedNum);
+  }
+
+  @Step("小数値の<expected>に近い")
+  public async shouldBeCloseTo(expected: string): Promise<void> {
+    const actual = getCurrentValue<number>();
+    const expectedNum = parseFloat(expected);
+    createDecimalAssertable(actual).shouldBeCloseTo(expectedNum, 6);
+  }
+
+  @Step("小数点以下<scale>桁である")
+  public async shouldHaveScale(scale: string): Promise<void> {
+    const actual = getCurrentValue<number>();
+    createDecimalAssertable(actual).shouldHaveScale(parseInt(scale, 10));
+  }
+}
+
+// ============================================
+// Table assertions (テーブル)
+// ============================================
+
+export class TableAssertionSteps {
+  @Step("テーブル<tableString>である")
+  public async shouldEqualTable(tableString: string): Promise<void> {
+    const actual = getCurrentValue<Table>();
+    const expected = parseGaugeTable(tableString);
+    createTableAssertable(actual).shouldEqual(expected);
+  }
+
+  @Step("以下のテーブルである <tableString>")
+  public async shouldEqualTableAlt(tableString: string): Promise<void> {
+    const actual = getCurrentValue<Table>();
+    const expected = parseGaugeTable(tableString);
+    createTableAssertable(actual).shouldEqual(expected);
+  }
+
+  @Step("テーブルの行数が<expected>である")
+  public async shouldHaveRowCount(expected: string): Promise<void> {
+    const actual = getCurrentValue<Table>();
+    createTableAssertable(actual).shouldHaveRowCount(parseInt(expected, 10));
+  }
+
+  @Step("テーブルが空である")
+  public async shouldBeEmpty(): Promise<void> {
+    const actual = getCurrentValue<Table>();
+    createTableAssertable(actual).shouldBeEmpty();
+  }
+
+  @Step("テーブルが空ではない")
+  public async shouldNotBeEmpty(): Promise<void> {
+    const actual = getCurrentValue<Table>();
+    createTableAssertable(actual).shouldNotBeEmpty();
+  }
+}
+
+// ============================================
+// Existence assertions (存在)
+// ============================================
+
+export class ExistenceAssertionSteps {
+  @Step("存在する")
+  public async shouldExist(): Promise<void> {
+    const actual = getCurrentValue<unknown>();
+    if (actual === null || actual === undefined) {
+      throw new Error("Assertion failed: expected value to exist");
+    }
+  }
+
+  @Step("存在しない")
+  public async shouldNotExist(): Promise<void> {
+    const actual = getCurrentValue<unknown>();
+    if (actual !== null && actual !== undefined) {
+      throw new Error(`Assertion failed: expected value to not exist, but got ${JSON.stringify(actual)}`);
+    }
+  }
+}
+
+// ============================================
+// Regex assertions (正規表現)
+// ============================================
+
+export class RegexAssertionSteps {
+  @Step("正規表現の<pattern>に完全一致している")
+  public async shouldMatchExactly(pattern: string): Promise<void> {
+    const actual = getCurrentValue<string>();
+    const regex = new RegExp(`^${pattern}$`);
+    if (!regex.test(actual)) {
+      throw new Error(`Assertion failed: expected "${actual}" to exactly match pattern "${pattern}"`);
     }
   }
 }
