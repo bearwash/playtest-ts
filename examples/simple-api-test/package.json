@@ -1,0 +1,19 @@
+{
+  "name": "simple-api-test",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Simple API test example using playtest-ts",
+  "scripts": {
+    "test": "gauge run specs"
+  },
+  "dependencies": {
+    "@playtest-ts/core": "workspace:*",
+    "@playtest-ts/http": "workspace:*",
+    "@playtest-ts/wiremock": "workspace:*",
+    "gauge-ts": "^0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "~5.8.0"
+  }
+}
