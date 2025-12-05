@@ -4,7 +4,7 @@
   "type": "module",
   "description": "Simple API test example using playtest-ts",
   "scripts": {
-    "test": "gauge run specs"
+    "test": "echo 'Run: gauge run specs (requires Gauge CLI installed)'"
   },
   "dependencies": {
     "@playtest-ts/core": "workspace:*",

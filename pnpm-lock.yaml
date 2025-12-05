@@ -8,6 +8,28 @@ importers:
 
   .: {}
 
+  examples/simple-api-test:
+    dependencies:
+      '@playtest-ts/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@playtest-ts/http':
+        specifier: workspace:*
+        version: link:../../packages/http
+      '@playtest-ts/wiremock':
+        specifier: workspace:*
+        version: link:../../packages/wiremock
+      gauge-ts:
+        specifier: ^0.1.0
+        version: 0.1.1
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.25
+      typescript:
+        specifier: ~5.8.0
+        version: 5.8.3
+
   packages/core:
     dependencies:
       gauge-ts:
