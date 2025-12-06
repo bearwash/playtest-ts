@@ -1,0 +1,26 @@
+{
+  "name": "my-first-test",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "初めてのPlayTest-TSプロジェクト",
+  "scripts": {
+    "build": "tsc",
+    "test": "gauge run specs/first_test.spec",
+    "test:mock": "gauge run specs/mock_test.spec",
+    "test:all": "gauge run specs",
+    "test:simple": "npm run build && node run-simple-test.js",
+    "test:vitest": "vitest run test-with-vitest.spec.ts"
+  },
+  "dependencies": {
+    "@playtest-ts/core": "workspace:*",
+    "@playtest-ts/http": "workspace:*",
+    "@playtest-ts/wiremock": "workspace:*",
+    "gauge-ts": "^0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "~5.8.0",
+    "vitest": "^1.6.0"
+  }
+}

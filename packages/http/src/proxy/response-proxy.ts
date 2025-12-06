@@ -59,7 +59,13 @@ class ResponseProxyImpl implements ResponseProxy {
 
   jsonBody<T = unknown>(): T {
     if (this._jsonBody === undefined) {
-      this._jsonBody = JSON.parse(this.response.body);
+      try {
+        this._jsonBody = JSON.parse(this.response.body);
+      } catch (error) {
+        throw new Error(
+          `Failed to parse response body as JSON: ${error instanceof Error ? error.message : String(error)}\nResponse body: ${this.response.body.substring(0, 100)}${this.response.body.length > 100 ? '...' : ''}`
+        );
+      }
     }
     return this._jsonBody as T;
   }

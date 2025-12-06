@@ -1,5 +1,6 @@
 // Mock builder for setting up mock responses
 
+import type nock from "nock";
 import { MockServer } from "../server/mock-server.js";
 
 export interface MockRequest {
@@ -133,16 +134,22 @@ export class MockBuilder {
         interceptor = scope.get(path);
         break;
       case "post":
-        interceptor = scope.post(path, this.request.body as nock.RequestBodyMatcher);
+        interceptor = this.request.body !== undefined
+          ? scope.post(path, this.request.body as nock.RequestBodyMatcher)
+          : scope.post(path);
         break;
       case "put":
-        interceptor = scope.put(path, this.request.body as nock.RequestBodyMatcher);
+        interceptor = this.request.body !== undefined
+          ? scope.put(path, this.request.body as nock.RequestBodyMatcher)
+          : scope.put(path);
         break;
       case "delete":
         interceptor = scope.delete(path);
         break;
       case "patch":
-        interceptor = scope.patch(path, this.request.body as nock.RequestBodyMatcher);
+        interceptor = this.request.body !== undefined
+          ? scope.patch(path, this.request.body as nock.RequestBodyMatcher)
+          : scope.patch(path);
         break;
       default:
         interceptor = scope.intercept(path, method);
@@ -162,6 +169,3 @@ export class MockBuilder {
     );
   }
 }
-
-// Type import for nock
-import type nock from "nock";

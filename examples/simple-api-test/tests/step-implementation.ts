@@ -21,10 +21,7 @@ export class Setup {
     // Initialize mock server for external API
     initMockServer("ExternalAPI", "http://localhost:3000");
 
-    // Setup mock responses
-    const mockServer = new MockBuilder(
-      { name: "ExternalAPI", baseUrl: "http://localhost:3000" } as any
-    );
+    // Note: Mock responses can be set up in individual test steps using the mock step definitions
   }
 
   @AfterSuite()
